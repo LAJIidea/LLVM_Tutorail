@@ -8,6 +8,8 @@
 #include "AST.h"
 #include "Lexer.h"
 
+#include <map>
+
 namespace toy {
 
     class Parser {
@@ -20,6 +22,50 @@ namespace toy {
 
     private:
         Lexer &lexer;
+
+        /// CurTok - Provide a simple token buffer, CurTok is the current
+        /// token the parser is looking at.
+        Token CurTok;
+
+        /// BinopPrecedence - This holds the precedence for each binary operator that is
+        /// defined
+        std::map<char, int> BinopPrecedence;
+
+        /// Get the precedence of the pending binary operator token.
+        int getTkPrecedence();
+
+        /// These are little helper functions for error handling.
+        std::unique_ptr<ExprAST> logError(const char  *str);
+
+        std::unique_ptr<PrototypeAST> logErrorP(const char *str);
+
+        /// expression ::= primary binoprhs
+        std::unique_ptr<ExprAST> parseExpression();
+
+        /// number-expr ::= number
+        std::unique_ptr<ExprAST> parseNumberExpr();
+
+        /// paren-expr ::= '(' expression ')'
+        std::unique_ptr<ExprAST> parseParenExpr();
+
+        /// identifier-expr ::= identifier
+        ////                 |  identifier '(' expression* ')'
+        std::unique_ptr<ExprAST> parseIdentifierExpr();
+
+        /// binoprhs ::= ('+' primary)*
+        std::unique_ptr<ExprAST> parseBinOpRHs(int exprPrec, std::unique_ptr<ExprAST> LHS);
+
+        /// prototype ::= id '(' id* ')'
+        std::unique_ptr<PrototypeAST> parsePrototype();
+
+        /// definition ::= 'def' prototype expression
+        std::unique_ptr<FunctionAST> parseDefinition();
+
+        /// toplevel-expr ::= expression
+        std::unique_ptr<FunctionAST> parseTopLevelExpr();
+
+        /// external ::= 'extern' prototype
+        std::unique_ptr<PrototypeAST> parseExtern();
     };
 
 }
