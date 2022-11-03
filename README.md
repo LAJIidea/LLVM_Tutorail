@@ -55,3 +55,20 @@ entry:
 }
 ```
 
+另一方面， IRBuilder它有如以下的限制：它在构建代码时将所有分析都与代码内联，如下所示：
+```python
+def test(x) (1+2+x)*(x+(1+2))
+```
+
+输出为：
+```asm
+define double @test(double %x) {
+entry:
+    %addtmp = fadd double 3.000e+00, %x
+    %addtmp1 = fadd double %x, 3.0003+00
+    %multmp = fmul double %addtmp, %addtmp1
+    ret double %multmp
+}
+```
+上面的例子中LHS和RHS值为相同的，可以优化成`tmp = x+3; result = tmp * tmp`,但不幸的是没有多少本地分析能够检测和纠正这一点。这需要两个转换：
+表达式重新关联(使add的词法相同)和公共子表达式消除(CSE)以删除冗余的add指令。
