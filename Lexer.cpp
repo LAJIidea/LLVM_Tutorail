@@ -61,7 +61,7 @@ namespace toy {
 
         // Otherwise, just return the character as its ascii value.
         Token thisChar = Token(lastChar);
-        lastChar = Token(getNextToken());
+        lastChar = getchar();
         return thisChar;
     }
 

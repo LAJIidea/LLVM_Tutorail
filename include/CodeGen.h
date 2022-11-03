@@ -1,8 +1,0 @@
-//
-// Created by BY210033 on 2022/11/1.
-//
-
-#ifndef LLVM_TUTORAIL_CODEGEN_H
-#define LLVM_TUTORAIL_CODEGEN_H
-
-#endif //LLVM_TUTORAIL_CODEGEN_H

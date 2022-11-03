@@ -17,22 +17,20 @@ namespace toy {
         /// Create a Parser for the supplied lexer.
         explicit Parser(Lexer &lexer): lexer(lexer) {}
 
-        /// Parse a full Module. A module is a list of function definitions.
-//        std::unique_ptr<
+        void addBinOpPrecedence(char op, int level);
+
+        /// top ::= definition | external | expression | ';'
+        void parse();
 
     private:
         Lexer &lexer;
-
-        /// CurTok - Provide a simple token buffer, CurTok is the current
-        /// token the parser is looking at.
-        Token CurTok;
 
         /// BinopPrecedence - This holds the precedence for each binary operator that is
         /// defined
         std::map<char, int> BinopPrecedence;
 
         /// Get the precedence of the pending binary operator token.
-        int getTkPrecedence();
+        int getTokPrecedence();
 
         /// These are little helper functions for error handling.
         std::unique_ptr<ExprAST> logError(const char  *str);
@@ -51,6 +49,11 @@ namespace toy {
         /// identifier-expr ::= identifier
         ////                 |  identifier '(' expression* ')'
         std::unique_ptr<ExprAST> parseIdentifierExpr();
+
+        /// primary ::= identifier-expr
+        ///          |  number-expr
+        ///          |  paren-expr
+        std::unique_ptr<ExprAST> parsePrimary();
 
         /// binoprhs ::= ('+' primary)*
         std::unique_ptr<ExprAST> parseBinOpRHs(int exprPrec, std::unique_ptr<ExprAST> LHS);
