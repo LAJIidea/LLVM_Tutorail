@@ -3,6 +3,7 @@
 //
 #include "Parse.h"
 
+using namespace llvm;
 namespace toy {
 
     void Parser::addBinOpPrecedence(char op, int level) {
@@ -196,23 +197,40 @@ namespace toy {
                     lexer.getNextToken();
                     break;
                 case tok_def:
-                    if (parseDefinition()) {
-                        fprintf(stderr, "Parsed a function definition.\n");
+                    if (auto FnAst = parseDefinition()) {
+                        if (auto *FnIR = FnAst->codegen()) {
+                            fprintf(stderr, "Read function definition:");
+                            FnIR->print(errs());
+                            fprintf(stderr, "\n");
+                        }
                     } else {
                         lexer.getNextToken();
                     }
                     break;
                 case tok_extern:
-                    if (parseExtern())
-                        fprintf(stderr, "Parsed an extern\n");
-                    else
+                    if (auto ProtoAST = parseExtern()) {
+                        if (auto *FnIR = ProtoAST->codegen()) {
+                            fprintf(stderr, "Read extern:");
+                            FnIR->print(errs());
+                            fprintf(stderr, "\n");
+                        }
+                    } else {
                         lexer.getNextToken();
+                    }
                     break;
                 default:
-                    if (parseTopLevelExpr())
-                        fprintf(stderr, "Parsed a top-level expr\n");
-                    else
+                    if (auto FnAST = parseTopLevelExpr()) {
+                        if (auto *FnIR = FnAST->codegen()) {
+                            fprintf(stderr, "Read top-level expression:");
+                            FnIR->print(errs());
+                            fprintf(stderr, "\n");
+
+                            // Remove the anonymous expression.
+                            FnIR->eraseFromParent();
+                        }
+                    } else {
                         lexer.getNextToken();
+                    }
                     break;
             }
         }

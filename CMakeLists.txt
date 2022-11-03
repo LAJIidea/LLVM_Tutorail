@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.23)
+cmake_minimum_required(VERSION 3.13.4)
 
 if(POLICY CMP0068)
 	cmake_policy(SET CMP0068 NEW)
@@ -36,6 +36,6 @@ llvm_map_components_to_libnames(llvm_libs core support nativecodegen orcjit)
 
 include_directories(include)
 
-add_llvm_executable(Kaleidoscope main.cpp Lexer.cpp Parser.cpp)
-#target_link_libraries(Kaleidoscope ${llvm_libs})
+add_llvm_executable(Kaleidoscope main.cpp Lexer.cpp Parser.cpp AST.cpp)
+target_link_libraries(Kaleidoscope ${llvm_libs})
 
