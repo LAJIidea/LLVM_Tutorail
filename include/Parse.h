@@ -20,7 +20,7 @@ namespace toy {
         void addBinOpPrecedence(char op, int level);
 
         /// top ::= definition | external | expression | ';'
-        void parse();
+        void parse(llvm::ExitOnError err, std::unique_ptr<llvm::orc::KaleidoscopeJIT> jit);
 
     private:
         Lexer &lexer;

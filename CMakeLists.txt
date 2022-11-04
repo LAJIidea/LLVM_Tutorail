@@ -17,8 +17,8 @@ project(LLVM_Tutorail)
 
 set(CMAKE_CXX_STANDARD 17)
 
-#set(LLVM_DIR "F:\\llvm-12\\lib\\cmake\\llvm")
-set(LLVM_DIR "D:\\dev\\libs\\llvm\\lib\\cmake\\llvm")
+set(LLVM_DIR "F:\\llvm-12\\lib\\cmake\\llvm")
+#set(LLVM_DIR "D:\\dev\\libs\\llvm\\lib\\cmake\\llvm")
 
 
 find_package(LLVM REQUIRED CONFIG)
@@ -32,10 +32,14 @@ include_directories(${LLVM_INCLUDE_DIRS})
 link_directories(${LLVM_BUILD_LIBARARY_DIR})
 add_definitions(${LLVM_DEFINITIONS})
 
-llvm_map_components_to_libnames(llvm_libs core support nativecodegen orcjit)
+llvm_map_components_to_libnames(llvm_libs core support nativecodegen orcjit analysis
+											executionengine instcombine object runtimedyld
+											scalaropts native)
 
 include_directories(include)
 
-add_llvm_executable(Kaleidoscope main.cpp Lexer.cpp Parser.cpp AST.cpp Optimizer.cpp)
-target_link_libraries(Kaleidoscope ${llvm_libs})
+#add_llvm_executable(Kaleidoscope main.cpp Lexer.cpp Parser.cpp AST.cpp)
+#target_link_libraries(Kaleidoscope ${llvm_libs})
 
+add_subdirectory(chap4)
+add_subdirectory(chap5)

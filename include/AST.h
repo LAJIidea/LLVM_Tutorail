@@ -5,6 +5,8 @@
 #ifndef LLVM_TUTORAIL_AST_H
 #define LLVM_TUTORAIL_AST_H
 
+#include "KaleidoscopeJIT.h"
+
 #include <llvm/ADT/APFloat.h>
 #include <llvm/ADT/STLExtras.h>
 #include <llvm/IR/BasicBlock.h>
@@ -109,9 +111,11 @@ namespace toy {
         llvm::Function *codegen();
     };
 
-    void InitializeModule();
+    void InitializeModule(std::unique_ptr<llvm::orc::KaleidoscopeJIT> jit);
 
     void showErrors();
+
+    std::unique_ptr<llvm::Module> getModule();
 
 } // End anonymous namespace
 

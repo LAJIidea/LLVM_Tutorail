@@ -1,6 +1,9 @@
 #include "Parse.h"
+#include "KaleidoscopeJIT.h"
 
 using namespace toy;
+using namespace llvm;
+using namespace llvm::orc;
 int main() {
     Lexer lexer;
     Parser parser(lexer);
@@ -11,12 +14,15 @@ int main() {
     parser.addBinOpPrecedence('-', 20);
     parser.addBinOpPrecedence('*', 40); //highest.
 
+    ExitOnError ExitOnErr;
+    auto jit = ExitOnErr(KaleidoscopeJIT::Create());
+
     // Make the module, which holds all the code.
-    InitializeModule();
+    InitializeModule(std::move(jit));
 
     // Primary the first token.
     fprintf(stderr, "ready>");
-    parser.parse();
+    parser.parse(ExitOnErr, std::move(jit));
 
     showErrors();
 

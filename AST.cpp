@@ -6,6 +6,10 @@
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Type.h>
 #include <llvm/IR/Verifier.h>
+#include <llvm/IR/LegacyPassManager.h>
+#include <llvm/Transforms/InstCombine/InstCombine.h>
+#include <llvm/Transforms/Scalar.h>
+#include <llvm/Transforms/Scalar/GVN.h>
 
 using namespace llvm;
 namespace toy {
@@ -14,6 +18,9 @@ namespace toy {
     static std::unique_ptr<IRBuilder<>> Builder;
     static std::unique_ptr<Module> TheModule;
     static std::map<std::string, Value*> NameValues;
+    static std::unique_ptr<legacy::FunctionPassManager> TheFPM;
+
+
 
     Value *logErrorV(const char *str) {
         fprintf(stderr, "Error: %s\n", str);
@@ -141,6 +148,9 @@ namespace toy {
             // validate the generated code, checking for consistency.
             verifyFunction(*TheFunction);
 
+            // Optimize the function.
+            TheFPM->run(*TheFunction);
+
             return TheFunction;
         }
 
@@ -149,18 +159,39 @@ namespace toy {
         return nullptr;
     }
 
-    void InitializeModule() {
+    void InitializeModule(std::unique_ptr<llvm::orc::KaleidoscopeJIT> jit) {
         // Open a new context and module.
         TheContext = std::make_unique<LLVMContext>();
         TheModule = std::make_unique<Module>("my cool jit", *TheContext);
+        TheModule->setDataLayout(jit->getDataLayout());
 
         // Create a new builder for the module.
         Builder = std::make_unique<IRBuilder<>>(*TheContext);
+
+        // 初始化全局FPM并附加到TheModule.
+        // 这里添加了四个优化通道，这里选择的通道是一组非常标准的"清理"优化
+        // Create a new pass manager attached to it.
+        TheFPM = std::make_unique<legacy::FunctionPassManager>(TheModule.get());
+
+        // Do simple "peephole" optimizations and bit-twiddling optzns.
+        TheFPM->add(createInstructionCombiningPass());
+        // Reassociate expressions.
+        TheFPM->add(createReassociatePass());
+        // Eliminate Common SubExpressions.
+        TheFPM->add(createGVNPass());
+        // Simplify the control flow graph (deleting unreachable blocks, etc).
+        TheFPM->add(createCFGSimplificationPass());
+
+        TheFPM->doInitialization();
     }
 
     void showErrors() {
         // Print out all the generated code.
         TheModule->print(errs(), nullptr);
+    }
+
+    std::unique_ptr<Module> getModule() {
+        return std::move(TheModule);
     }
 
 }

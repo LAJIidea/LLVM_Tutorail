@@ -186,7 +186,7 @@ namespace toy {
         return parsePrototype();
     }
 
-    void Parser::parse() {
+    void Parser::parse(llvm::ExitOnError err, std::unique_ptr<llvm::orc::KaleidoscopeJIT> jit) {
         lexer.getNextToken();
         while (true) {
             fprintf(stderr, "ready>");
@@ -221,12 +221,11 @@ namespace toy {
                 default:
                     if (auto FnAST = parseTopLevelExpr()) {
                         if (auto *FnIR = FnAST->codegen()) {
-                            fprintf(stderr, "Read top-level expression:");
-                            FnIR->print(errs());
-                            fprintf(stderr, "\n");
+                            // Create a ResourceTracjer to track JIT'd memory allocated to our
+                            // anonymous expression -- that way we can free it after executing.
+                            auto RT = jit->getMainJITDylib().createResourceTracker();
 
-                            // Remove the anonymous expression.
-                            FnIR->eraseFromParent();
+//                            auto TSM = orc::ThreadSafeModule(std::move())
                         }
                     } else {
                         lexer.getNextToken();
