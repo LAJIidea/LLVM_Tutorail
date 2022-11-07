@@ -43,3 +43,4 @@ include_directories(include)
 
 add_subdirectory(chap4)
 add_subdirectory(chap5)
+add_subdirectory(chap6)
